@@ -24,8 +24,7 @@ This project can be run in two ways. Either with the environment running and the
 
 To run the project in local mode, run `make dev`. From there you can run go run `cmd/ingester/main.go` with the proper environment variables set, or via something like `vscode` with the [launch options set](./.vscode/launch.json) If you want to tear down the dev mode instance, `make down` is a convenience method that can be used.
 
-For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal (because who doesn't like seeing logs as a demo).
-
+For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal.
 
 On startup, docker will set up the scanner, pubsub emulator, and topic as in the base project. Additionally, it will also spin up postgres and run the migrations before the ingester begins running.
 
