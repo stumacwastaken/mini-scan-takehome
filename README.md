@@ -13,8 +13,10 @@ A project demonstrating basic data ingestion for google pubsub.
 ## Instructions to run
 This project can be run in two ways. Either with the environment running and the `ingester` service running on a local machine, or everything running all at once.
 
-To run the project in local mode, run `make dev`. For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal (because who doesn't like seeing logs as a demo).
-If you want to tear down the dev mode instance, `make down` is a convenience method that can be used.
+To run the project in local mode, run `make dev`. From there you can run go run `cmd/ingester/main.go` with the proper environment variables set, or via something like `vscode` with the [launch options set](./.vscode/launch.json) If you want to tear down the dev mode instance, `make down` is a convenience method that can be used.
+
+For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal (because who doesn't like seeing logs as a demo).
+
 
 On startup, docker will set up the scanner, pubsub emulator, and topic as in the base project. Additionally, it will also spin up postgres and run the migrations before the ingester begins running.
 
@@ -58,3 +60,9 @@ In the event of a failure to upload, we roll back the keys in the cache that are
 
 ### Basic Diagram
 ![basic diagram of ingester](./diagrams/mini-scan-arch.drawio.png)
+
+
+## Further thoughts
+This project lacks proper metrics, but could be added relatively easily. I personally love prometheus and openTelemetry with a grafana stack, but didn't have the time to set it all up in docker compose properly. Given another hour or two, I figure we could have some rather nice grafana dashboards.
+
+Additionally, this could also apply to tracing, although I'm unaware of how google pubsub handles otel traces.
