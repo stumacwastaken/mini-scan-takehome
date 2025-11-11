@@ -10,7 +10,6 @@ import (
 )
 
 type PostgresRespository struct {
-	// conn *pgx.Conn
 	conn *pgxpool.Pool
 }
 

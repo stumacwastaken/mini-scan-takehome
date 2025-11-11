@@ -98,7 +98,7 @@ func (u *Upserter) Start(ctx context.Context, wg *sync.WaitGroup) error {
 
 // Flush will attempt to take all records the upserter has and save them to the data store
 func (u *Upserter) Flush() {
-	// hardcoding a 60 second timeout. In a better work this would be configurable.
+	// hardcoding a 60 second timeout. Could be configurable if more time is needed.
 	ctx, fn := context.WithTimeout(context.Background(), time.Second*60)
 	defer fn()
 	u.Log.Debug("flushing entries to data store", zap.Int("count", len(u.batch)))

@@ -10,7 +10,7 @@ A project demonstrating basic data ingestion for google pubsub.
  - [redis](https://redis.io/) (optional, see notes)
 
 
-## instructions to run
+## Instructions to run
 This project can be run in two ways. Either with the environment running and the `ingester` service running on a local machine, or everything running all at once.
 
 To run the project in local mode, run `make dev`. For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal (because who doesn't like seeing logs as a demo).

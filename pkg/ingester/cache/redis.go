@@ -12,13 +12,13 @@ import (
 )
 
 // Cache when enabled will help determine if an incoming request is out of order.
-// it will
 type Cache struct {
 	enabled bool
 	rcl     redis.UniversalClient
 	ttl     time.Duration
 }
 
+// NewCache creates a new redis cache
 func NewCache(rcl redis.UniversalClient, ttl time.Duration) *Cache {
 	return &Cache{
 		enabled: true,
@@ -53,7 +53,8 @@ func (c *Cache) RecordIsNew(ctx context.Context, record ingester.Scan) (bool, er
 	}
 
 	// our record already exists and is newer. Move along.
-	// This also stops us from needing to keep track of the identifiers
+	// This also stops us from needing to keep track of the identifiers because
+	// we can use the ip/port/service and timestamp.
 	if unixTime >= record.Timestamp {
 		return false, nil
 	}
@@ -65,8 +66,8 @@ func (c *Cache) RecordIsNew(ctx context.Context, record ingester.Scan) (bool, er
 	return false, nil
 }
 
-// In the event of a database failure, we should remove the records we've previously
-// seen.
+// RemoveRecords will remove the records from the cache. Used in the event of
+// a flush failure and we need to see the messages again.
 func (c *Cache) RemoveRecords(ctx context.Context, records []ingester.Scan) (int64, error) {
 	var keys = make([]string, len(records))
 	for i, record := range records {

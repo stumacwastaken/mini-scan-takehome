@@ -57,6 +57,7 @@ func (s *Scan) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Time will provide a [time.Time] value instead of the provided unix epoc time
 func (s *Scan) Time() time.Time {
 	return time.Unix(s.Timestamp, 0)
 }

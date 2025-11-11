@@ -12,21 +12,6 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-type mockRepo struct {
-	err      error
-	res      []Scan
-	timesHit int
-}
-
-func (m *mockRepo) UpsertMany(_ context.Context, scans []Scan) error {
-	if m.err != nil {
-		return m.err
-	}
-	m.res = append(m.res, scans...)
-	m.timesHit++
-	return nil
-}
-
 // General "unit" end to end test. Covers the start/end sequence with the ccontexts
 // more tests should be added to cover the error case
 func TestUpsertEndToEnd(t *testing.T) {
@@ -127,7 +112,6 @@ func TestCachePreventsOoOInsertions(t *testing.T) {
 
 	wg.Wait()
 	assert.Equal(t, attemptedMessageCount, len(responseChan), "expected msgs and msgs in response chan to be equal")
-	// assert.Equal(t, tt.expectedHitCount, repo.timesHit, "expected repo to be hit same number of times")
 	assert.Equal(t, savedMessageCount, len(repo.res), "expected repo store to be same as msg count")
 	fn()
 }
@@ -167,4 +151,19 @@ func (mc *mockCache) RecordIsNew(_ context.Context, record Scan) (bool, error) {
 		return true, nil
 	}
 	return record.Timestamp > val, nil
+}
+
+type mockRepo struct {
+	err      error
+	res      []Scan
+	timesHit int
+}
+
+func (m *mockRepo) UpsertMany(_ context.Context, scans []Scan) error {
+	if m.err != nil {
+		return m.err
+	}
+	m.res = append(m.res, scans...)
+	m.timesHit++
+	return nil
 }

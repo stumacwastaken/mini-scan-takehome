@@ -15,9 +15,7 @@ import (
 // Because we're using the Receive function in Start() and it doesn't
 // necessarily make sense to pull out that functionality into an interface
 // because the core logic is in [receiveMessage] we'll instead use that instead.
-//
-//	[Start] can be tested with integration tests. You can make the argument that
-//
+// [Start] can be tested with integration tests. You can make the argument that
 // the receiveMessage should be public, but given how tied it is to google's
 // pubsub I'm ok leaving it for now.
 func TestReceiveMessage(t *testing.T) {
