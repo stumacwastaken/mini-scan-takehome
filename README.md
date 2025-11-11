@@ -20,7 +20,7 @@ A project demonstrating basic data ingestion for google pubsub.
 
 
 ## Instructions to run
-This project can be run in two ways. Either with the environment running and the `ingester` service running on a local machine, or everything running all at once.
+This project can be run in two ways. Either with the environment running and the `ingester` service running on a local machine, or everything running all at once in a demo format.
 
 To run the project in local mode, run `make dev`. From there you can run go run `cmd/ingester/main.go` with the proper environment variables set, or via something like `vscode` with the [launch options set](./.vscode/launch.json) If you want to tear down the dev mode instance, `make down` is a convenience method that can be used.
 
