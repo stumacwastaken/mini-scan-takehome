@@ -2,6 +2,15 @@
 
 A project demonstrating basic data ingestion for google pubsub.
 
+### Contents
+- [Tools used](#tools-used)
+- [Instructions to run](#instructions-to-run)
+- [Testing](#testing)
+- [A note on redis](#a-note-on-redis)
+- [Levers to Pull (configuration)](#levers-to-pull)
+- [General Architecture](#general-architecture-overview)
+
+
 ## Tools used
  - [golang](https://go.dev/)
  - [docker compose](https://docs.docker.com/compose/)
