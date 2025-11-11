@@ -1,0 +1,16 @@
+{
+    "[go]" : {
+        "editor.rulers": [
+            {
+                "column": 80,
+                "color": "#9e0fd2"
+            },
+            {
+                "column": 120,
+                "color": "#d20f39"
+            }
+        ],
+    
+    },
+    "go.lintOnSave": "workspace",
+}

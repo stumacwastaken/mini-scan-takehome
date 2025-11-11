@@ -1,53 +1,60 @@
 # Mini-Scan
 
-Hello!
+A project demonstrating basic data ingestion for google pubsub.
 
-As you've heard by now, Censys scans the internet at an incredible scale. Processing the results necessitates scaling horizontally across thousands of machines. One key aspect of our architecture is the use of distributed queues to pass data between machines.
+## Tools used
+ - [golang](https://go.dev/)
+ - [docker compose](https://docs.docker.com/compose/)
+ - [postgres](https://www.postgresql.org/) (v18)
+ - [golang-migrate](https://github.com/golang-migrate/migrate)
+ - [redis](https://redis.io/) (optional, see notes)
 
----
 
-The `docker-compose.yml` file sets up a toy example of a scanner. It spins up a Google Pub/Sub emulator, creates a topic and subscription, and publishes scan results to the topic. It can be run via `docker compose up`.
+## instructions to run
+This project can be run in two ways. Either with the environment running and the `ingester` service running on a local machine, or everything running all at once.
 
-Your job is to build the data processing side. It should:
+To run the project in local mode, run `make dev`. For the demo mode, run `make demo`. Note that the demo version will not detach from the terminal (because who doesn't like seeing logs as a demo).
+If you want to tear down the dev mode instance, `make down` is a convenience method that can be used.
 
-1. Pull scan results from the subscription `scan-sub`.
-2. Maintain an up-to-date record of each unique `(ip, port, service)`. This should contain when the service was last scanned and a string containing the service's response.
+On startup, docker will set up the scanner, pubsub emulator, and topic as in the base project. Additionally, it will also spin up postgres and run the migrations before the ingester begins running.
 
-> **_NOTE_**
-> The scanner can publish data in two formats, shown below. In both of the following examples, the service response should be stored as: `"hello world"`.
->
-> ```javascript
-> {
->   // ...
->   "data_version": 1,
->   "data": {
->     "response_bytes_utf8": "aGVsbG8gd29ybGQ="
->   }
-> }
->
-> {
->   // ...
->   "data_version": 2,
->   "data": {
->     "response_str": "hello world"
->   }
-> }
-> ```
+To see the results of the data being entered, check things out with these commands:
+```sh
+docker exec -it mini-scan-takehome-db-1 psql -U scanner -d scanner_dev
 
-Your processing application should be able to be scaled horizontally, but this isn't something you need to actually do. The processing application should use `at-least-once` semantics where ever applicable.
+# once inside the container, 
+select * from scan_results;
+```
 
-You may write this in any languages you choose, but Go would be preferred.
 
-You may use any data store of your choosing, with `sqlite` being one example. Like our own code, we expect the code structure to make it easy to switch data stores.
+a full list of available commands can be seen with `make help`
+## Testing
 
-Please note that Google Pub/Sub is best effort ordering and we want to keep the latest scan. While the example scanner does not publish scans at a rate where this would be an issue, we expect the application to be able to handle extreme out of orderness. Consider what would happen if the application received a scan that is 24 hours old.
+Aside from the manual steps, this project comes with a basic unit test suite. It can be run using `make test`, or `make cover-html` to see a coverage report in your browser.
 
----
+## A note on redis:
+Redis is used to maintain a basic cache ahead of the database for values that have already been entered, or for values that may have come out of order. It's possible to run this solution without redis, as the
+scan_results table does have a [uniqueness constraint](./db/migrations/000001_create_scan_results_table.up.sql) that we can use to determine if we should upsert or not. That said, it's a bit kinder to the database to have a cache in front of it.
 
-Please upload the code to a publicly accessible GitHub, GitLab or other public code repository account. This README file should be updated, briefly documenting your solution. Like our own code, we expect testing instructions: whether it’s an automated test framework, or simple manual steps.
 
-To help set expectations, we believe you should aim to take no more than 4 hours on this task.
+## Levers to pull:
+In keeping with the mantra of the 12-factor application, the `ingester` uses environment variables as configuration. See the [demo env file](./.env.demo) for an overview of whats available.
+Please note that many more configuration options _could_ be added (pgPool size, redis pool size, etc), but I ran out of time.
 
-We understand that you have other responsibilities, so if you think you’ll need more than 5 business days, just let us know when you expect to send a reply.
+### A quick note on sensitive data
+In the interest of time, and the fact that this is a demo environment (and local only), the local database passwords are in fact in the .env files. This can be avoided by adding an entry to the .gitignore and providing an example for users to copy over. I wanted a "one click" solution to start up the demo environment, but didn't have the time to copy an example file and sed/ack through the new env file to add in random passwords in my make commands.
 
-Please don’t hesitate to ask any follow-up questions for clarification.
+## General architecture overview
+
+The project is pretty simple, The diagram should give a general overview. The scanner will send data to pubsub, and the ingester will subscribe to the topic. From there, it will fan out any messages it receives via a channel to the upserter service. Which will check the cache for OoO or possibly duplicate records. The upserter will hold on to these records for a period of time, or until the batch size is large enough*. From there, a repository upserts the recrods using UNNSET to try to keep database thrashing lower.** Finally, once absorbed, the upserter sends a success response back along a message channel that each record has, where the ingester can mark the message with an `Ack()`
+
+In the event of a failure to upload, we roll back the keys in the cache that are affected, and then send a `Nack()` for the record to be retried.
+
+
+\* Currently that batch cache is a simple slice. But it could be updated to a more performant data structure, or, if we had multiple machines, we could sent it out to a ring buffer of another service. Similar to how Grafana's mimir works. I ran out of time to try my hand at it.
+
+\** If _very_ high performance is required, moving to a temp table and copying would probably be better.
+
+
+### Basic Diagram
+![basic diagram of ingester](./diagrams/mini-scan-arch.drawio.png)
