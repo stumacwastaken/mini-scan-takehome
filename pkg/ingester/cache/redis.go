@@ -34,7 +34,7 @@ func keyFromRecord(record ingester.Scan) string {
 // RecordIsNew checks the incoming scan to see if the record is out of order. If it is not,
 // it will update the cache with the newest timestamp.
 func (c *Cache) RecordIsNew(ctx context.Context, record ingester.Scan) (bool, error) {
-	key := keyFromRecord(ingester.Scan{})
+	key := keyFromRecord(record)
 
 	res, err := c.rcl.Get(ctx, key).Result()
 	if err != nil {
